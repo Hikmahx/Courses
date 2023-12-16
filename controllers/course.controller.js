@@ -65,15 +65,17 @@ const createCourse = async (req, res) => {
     // VALIDATE COURSE NUMBER FORMAT
     const courseNumberRegex = /^\d{3}$/;
     if (!courseNumberRegex.test(courseNumber)) {
-      return res
-        .status(400)
-        .json({
-          msg: "course number must be a three-digit, zero-padded integer",
-        });
+      return res.status(400).json({
+        msg: "course number must be a three-digit, zero-padded integer",
+      });
     }
 
     // CHECK FOR DUPLICATE COURSES
-    const existingCourse = await CourseModel.findOne({ subject, courseNumber });
+    const existingCourse = await CourseModel.findOne({
+      // USE A CASE-INSENSITIVE REGULAR EXPRESSION FOR SUBJECT COMPARISON
+      subject: { $regex: new RegExp(`^${subject}$`, "i") },
+      courseNumber,
+    });
     if (existingCourse) {
       return res.status(400).json({ msg: "Course already exists" });
     }
@@ -112,9 +114,8 @@ const updateCourse = async (req, res) => {
 
       // IF SUBJECT IS PROVIDED, CHECK FOR DUPLICATES WITH THE SAME SUBJECT AND COURSENUMBER
       if (subject) {
-
         // CASE-INSENSITIVE REGEX
-        query.subject = { $regex: new RegExp(subject, 'i') };
+        query.subject = { $regex: new RegExp(subject, "i") };
 
         // CHECK IF UPDATED COURSENUMBER IS PROVIDED
         if (courseNumber) {
@@ -126,15 +127,12 @@ const updateCourse = async (req, res) => {
 
       // IF COURSENUMBER IS PROVIDED, CHECK FOR DUPLICATES WITH THE SAME COURSENUMBER AND SUBJECT
       if (courseNumber) {
-
         // ENSURE IT IS A 3-DIGIT, ZERO PADDED INTEGER
         const courseNumberRegex = /^\d{3}$/;
         if (!courseNumberRegex.test(courseNumber)) {
-          return res
-            .status(400)
-            .json({
-              msg: "course number must be a three-digit, zero-padded integer",
-            });
+          return res.status(400).json({
+            msg: "course number must be a three-digit, zero-padded integer",
+          });
         }
 
         query.courseNumber = courseNumber;
@@ -142,7 +140,7 @@ const updateCourse = async (req, res) => {
         // CHECK IF UPDATED SUBJECT IS PROVIDED
         if (subject) {
           // CASE-INSENSITIVE REGEX
-          query.subject = { $regex: new RegExp(subject, 'i') };
+          query.subject = { $regex: new RegExp(subject, "i") };
         } else {
           query.subject = currentCourse.subject;
         }
