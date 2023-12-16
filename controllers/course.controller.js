@@ -49,112 +49,22 @@ const searchCoursesByDescription = async (req, res) => {
   }
 };
 
-
-// // @route    POST api/courses
-// // @desc     Add a new course
-// // @access   Public
-//  const addCourse = async (req, res) => {
-//   // VALIDATE THE REQUEST BODY
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return res.status(400).json({ errors: errors.array() });
-//   }
-
-//   const { subject, courseNumber, description } = req.body;
-
-//   try {
-//     // CHECK IF THE COURSE ALREADY EXISTS
-//     let course = await CourseModel.findOne({ subject, courseNumber });
-//     if (course) {
-//       return res.status(400).json({ msg: "Course already exist" });
-//     }
-
-//     // CREATE A NEW COURSE
-//     course = new CourseModel({
-//       subject,
-//       courseNumber,
-//       description,
-//     });
-
-//     // SAVE THE COURSE TO THE DATABASE
-//     await course.save();
-//     res.status(201).json(course);
-//   } catch (error) {
-//     console.error(error.message);
-//     res.status(500).send("Server Error");
-//   }
-// };
-
-// const createCourse = (req, res) => {
-//   const { subject, courseNumber, description } = req.body;
-
-//   // Validate courseNumber format
-//   if (!/^\d{3}$/.test(courseNumber)) {
-//     return res.status(400).json({ message: 'Invalid courseNumber format' });
-//   }
-
-//   // Check for duplicate courses
-//   const isDuplicate = courses.some(
-//     (c) => c.subject === subject && c.courseNumber === courseNumber
-//   );
-
-//   if (isDuplicate) {
-//     return res.status(400).json({ message: 'Duplicate course found' });
-//   }
-
-//   const newCourse = {
-//     id: courses.length + 1,
-//     subject,
-//     courseNumber,
-//     description,
-//   };
-
-//   courses.push(newCourse);
-//   res.status(201).json(newCourse);
-// };
-
-// // @route    PUT api/courses/:id
-// // @desc     Update a course by ID
-// // @access   Public
-//  const updateCourse = async (req, res) => {
-//   // EXTRACT DATA FROM THE REQUEST BODY
-//   const { subject, courseNumber, description } = req.body;
-
-//   try {
-//     // FIND THE COURSE BY ID
-//     let course = await CourseModel.findById(req.params.id);
-//     if (!course) {
-//       return res.status(400).json({ msg: "Course doesn't exist" });
-//     }
-
-//     // UPDATE THE COURSE PROPERTIES
-//     course.subject = subject;
-//     course.courseNumber = courseNumber;
-//     course.description = description;
-
-//     // SAVE THE UPDATED COURSE TO THE DATABASE
-//     await course.save();
-//     res.status(200).json(course);
-//   } catch (error) {
-//     if (error.name === "CastError") {
-//       return res.status(400).json({ msg: "Course doesn't exist" });
-//     }
-//     console.error(error.message);
-//     res.status(500).send("Server Error");
-//   }
-// };
-
 // @route    POST api/courses
 // @desc     Create a new course
 // @access   Private
-const addCourse = async (req, res) => {
+const createCourse = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { subject, courseNumber, description } = req.body;
 
   try {
     // VALIDATE COURSE NUMBER FORMAT
     const courseNumberRegex = /^\d{3}$/;
     if (!courseNumberRegex.test(courseNumber)) {
-      return res.status(400).json({ msg: 'courseNumber must be a three-digit, zero-padded integer' });
+      return res.status(400).json({ msg: 'course number must be a three-digit, zero-padded integer' });
     }
 
     // CHECK FOR DUPLICATE COURSES
@@ -187,7 +97,7 @@ const updateCourse = async (req, res) => {
     // VALIDATE COURSE NUMBER FORMAT
     const courseNumberRegex = /^\d{3}$/;
     if (!courseNumberRegex.test(courseNumber)) {
-      return res.status(400).json({ msg: 'courseNumber must be a three-digit, zero-padded integer' });
+      return res.status(400).json({ msg: 'course number must be a three-digit, zero-padded integer' });
     }
 
     // CHECK FOR DUPLICATE COURSES
@@ -237,7 +147,7 @@ module.exports = {
   getAllCourses,
   getCourseById,
   searchCoursesByDescription,
-  addCourse,
+  createCourse,
   updateCourse,
   deleteCourse,
 }

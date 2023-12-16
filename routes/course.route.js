@@ -1,7 +1,14 @@
 const express = require("express");
 const { body, validationResult } = require("express-validator");
 
-const { getAllCourses, getCourseById, addCourse, deleteCourse } = require("../controllers/course.controller");
+const {
+  getAllCourses,
+  getCourseById,
+  searchCoursesByDescription,
+  createCourse,
+  updateCourse,
+  deleteCourse,
+} = require("../controllers/course.controller");
 
 const router = express.Router();
 
@@ -14,7 +21,6 @@ router.get("/:id", getCourseById);
 // SEARCH FOR COURSES BY DESCRIPTION
 router.get("/search/:description", searchCoursesByDescription);
 
-
 // CREATE NEW COURSE (INSTRUCTOR)
 router.post(
   "/",
@@ -23,7 +29,7 @@ router.post(
     body("courseNumber", "course number is required").not().isEmpty(),
     body("description", "description is required").not().isEmpty(),
   ],
-  addCourse
+  createCourse
 );
 
 // UPDATE COURSE (INSTRUCTOR)
