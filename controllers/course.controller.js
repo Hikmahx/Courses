@@ -4,7 +4,7 @@ const { validationResult } = require("express-validator");
 // @route    GET api/courses
 // @desc     Get all courses
 // @access   Public
- const getAllCourses = async (req, res) => {
+const getAllCourses = async (req, res) => {
   try {
     const courses = await CourseModel.find();
     res.status(200).json(courses);
@@ -14,11 +14,10 @@ const { validationResult } = require("express-validator");
   }
 };
 
-
 // @route    GET api/courses/:id
 // @desc     Get a course by ID
 // @access   Public
- const getCourseById = async (req, res) => {
+const getCourseById = async (req, res) => {
   try {
     const course = await CourseModel.findById(req.params.id);
     if (!course) {
@@ -38,10 +37,12 @@ const { validationResult } = require("express-validator");
 // @desc     Search for courses by description (partial match)
 // @access   Public
 const searchCoursesByDescription = async (req, res) => {
-  const { description } = req.params;
+  const { desc } = req.query;
 
   try {
-    const courses = await CourseModel.find({ description: { $regex: description, $options: 'i' } });
+    const courses = await CourseModel.find({
+      description: { $regex: desc, $options: "i" },
+    });
     res.status(200).json(courses);
   } catch (error) {
     console.error(error.message);
@@ -64,13 +65,17 @@ const createCourse = async (req, res) => {
     // VALIDATE COURSE NUMBER FORMAT
     const courseNumberRegex = /^\d{3}$/;
     if (!courseNumberRegex.test(courseNumber)) {
-      return res.status(400).json({ msg: 'course number must be a three-digit, zero-padded integer' });
+      return res
+        .status(400)
+        .json({
+          msg: "course number must be a three-digit, zero-padded integer",
+        });
     }
 
     // CHECK FOR DUPLICATE COURSES
     const existingCourse = await CourseModel.findOne({ subject, courseNumber });
     if (existingCourse) {
-      return res.status(400).json({ msg: 'Course already exists' });
+      return res.status(400).json({ msg: "Course already exists" });
     }
 
     const newCourse = new CourseModel({
@@ -94,26 +99,69 @@ const updateCourse = async (req, res) => {
   const { subject, courseNumber, description } = req.body;
 
   try {
-    // VALIDATE COURSE NUMBER FORMAT
-    const courseNumberRegex = /^\d{3}$/;
-    if (!courseNumberRegex.test(courseNumber)) {
-      return res.status(400).json({ msg: 'course number must be a three-digit, zero-padded integer' });
+    // GET CURRENT COURSE DETAILS
+    const currentCourse = await CourseModel.findById(req.params.id);
+    if (!currentCourse) {
+      return res.status(404).json({ msg: "Course not found" });
     }
 
-    // CHECK FOR DUPLICATE COURSES
-    const existingCourse = await CourseModel.findOne({ subject, courseNumber });
-    if (existingCourse && existingCourse._id.toString() !== req.params.id) {
-      return res.status(400).json({ msg: 'Course already exists' });
+    // CHECK FOR DUPLICATE COURSES ONLY IF SUBJECT OR COURSE NUMBER IS PROVIDED
+    if (subject || courseNumber) {
+      // QUERY FOR COURSE OTHER THAN THE CURRENT ONE
+      const query = { _id: { $ne: req.params.id } };
+
+      // IF SUBJECT IS PROVIDED, CHECK FOR DUPLICATES WITH THE SAME SUBJECT AND COURSENUMBER
+      if (subject) {
+
+        // CASE-INSENSITIVE REGEX
+        query.subject = { $regex: new RegExp(subject, 'i') };
+
+        // CHECK IF UPDATED COURSENUMBER IS PROVIDED
+        if (courseNumber) {
+          query.courseNumber = courseNumber;
+        } else {
+          query.courseNumber = currentCourse.courseNumber;
+        }
+      }
+
+      // IF COURSENUMBER IS PROVIDED, CHECK FOR DUPLICATES WITH THE SAME COURSENUMBER AND SUBJECT
+      if (courseNumber) {
+
+        // ENSURE IT IS A 3-DIGIT, ZERO PADDED INTEGER
+        const courseNumberRegex = /^\d{3}$/;
+        if (!courseNumberRegex.test(courseNumber)) {
+          return res
+            .status(400)
+            .json({
+              msg: "course number must be a three-digit, zero-padded integer",
+            });
+        }
+
+        query.courseNumber = courseNumber;
+
+        // CHECK IF UPDATED SUBJECT IS PROVIDED
+        if (subject) {
+          // CASE-INSENSITIVE REGEX
+          query.subject = { $regex: new RegExp(subject, 'i') };
+        } else {
+          query.subject = currentCourse.subject;
+        }
+      }
+
+      const existingCourse = await CourseModel.findOne(query);
+      if (existingCourse) {
+        return res.status(400).json({ msg: "Course already exists" });
+      }
     }
 
     const updatedCourse = await CourseModel.findByIdAndUpdate(
       req.params.id,
       { subject, courseNumber, description },
-      { new: true } 
+      { new: true }
     );
 
     if (!updatedCourse) {
-      return res.status(404).json({ msg: 'Course not found' });
+      return res.status(404).json({ msg: "Course not found" });
     }
 
     res.status(200).json(updatedCourse);
@@ -126,7 +174,7 @@ const updateCourse = async (req, res) => {
 // @route    DELETE api/courses/:id
 // @desc     Delete a course by ID
 // @access   Private
- const deleteCourse = async (req, res) => {
+const deleteCourse = async (req, res) => {
   try {
     // FIND AND DELETE THE COURSE BY ID
     const course = await CourseModel.findByIdAndDelete(req.params.id);
@@ -150,4 +198,4 @@ module.exports = {
   createCourse,
   updateCourse,
   deleteCourse,
-}
+};
