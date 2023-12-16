@@ -15,11 +15,11 @@ const router = express.Router();
 // GET ALL COURSES
 router.get("/", getAllCourses);
 
+// SEARCH FOR COURSES BY DESCRIPTION
+router.get("/search", searchCoursesByDescription);
+
 // GET COURSE BY ID
 router.get("/:id", getCourseById);
-
-// SEARCH FOR COURSES BY DESCRIPTION
-router.get("/search/:description", searchCoursesByDescription);
 
 // CREATE NEW COURSE (INSTRUCTOR)
 router.post(
