@@ -10,18 +10,25 @@ const {
   deleteCourse,
 } = require("../controllers/course.controller");
 
+const {
+  verifyToken,
+  verifyTokenAndUser,
+  verifyTokenAndAdmin,
+  verifyTokenAndInstructor,
+} = require("../middlewares/auth.middleware");
+
 const router = express.Router();
 
-// GET ALL COURSES
+// GET ALL COURSES (PUBLIC ACCESS)
 router.get("/", getAllCourses);
 
-// SEARCH FOR COURSES BY DESCRIPTION
+// SEARCH FOR COURSES BY DESCRIPTION (PUBLIC ACCESS)
 router.get("/search", searchCoursesByDescription);
 
-// GET COURSE BY ID
+// GET COURSE BY ID (PUBLIC ACCESS)
 router.get("/:id", getCourseById);
 
-// CREATE NEW COURSE (INSTRUCTOR)
+// CREATE NEW COURSE (INSTRUCTOR ONLY)
 router.post(
   "/",
   [
@@ -29,13 +36,19 @@ router.post(
     body("courseNumber", "course number is required").not().isEmpty(),
     body("description", "description is required").not().isEmpty(),
   ],
+  verifyTokenAndInstructor,
   createCourse
 );
 
-// UPDATE COURSE (INSTRUCTOR)
-router.put("/:id", updateCourse);
+// UPDATE COURSE (INSTRUCTOR ONLY, CAN ONLY UPDATE THEIR OWN COURSES)
+router.put("/:id", verifyTokenAndUser, verifyTokenAndInstructor, updateCourse);
 
-// DELETE COURSE (INSTRUCTOR)
-router.delete("/:id", deleteCourse);
+// DELETE COURSE (INSTRUCTOR ONLY, CAN ONLY DELETE THEIR OWN COURSES)
+router.delete(
+  "/:id",
+  verifyTokenAndUser,
+  verifyTokenAndInstructor,
+  deleteCourse
+);
 
 module.exports = router;
