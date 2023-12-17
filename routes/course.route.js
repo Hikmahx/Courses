@@ -41,12 +41,11 @@ router.post(
 );
 
 // UPDATE COURSE (INSTRUCTOR ONLY, CAN ONLY UPDATE THEIR OWN COURSES)
-router.put("/:id", verifyTokenAndUser, verifyTokenAndInstructor, updateCourse);
+router.put("/:id", verifyTokenAndInstructor, updateCourse);
 
 // DELETE COURSE (INSTRUCTOR ONLY, CAN ONLY DELETE THEIR OWN COURSES)
 router.delete(
   "/:id",
-  verifyTokenAndUser,
   verifyTokenAndInstructor,
   deleteCourse
 );

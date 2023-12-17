@@ -1,5 +1,6 @@
 const CourseModel = require("../models/Course.model");
 const { validationResult } = require("express-validator");
+const UserModel = require("../models/User.model");
 
 // @route    GET api/courses
 // @desc     Get all courses
@@ -80,7 +81,15 @@ const createCourse = async (req, res) => {
       return res.status(400).json({ msg: "Course already exists" });
     }
 
+    const instructor = await UserModel.findById(req.user.id);
+
+    // CHECK IF THE USER IS A INSTRUCTOR
+    if (instructor.role != "instructor") {
+      return res.status(404).json({ msg: "Only an instructor can create a course" });
+    }
+
     const newCourse = new CourseModel({
+      instructor: req.user.id,
       subject,
       courseNumber,
       description,
@@ -152,6 +161,11 @@ const updateCourse = async (req, res) => {
       }
     }
 
+    // CHECK IF THE INSTRUCTOR IS THE OWNER OF THE COURSE
+    if (currentCourse.instructor.toString() !== req.user.id) {
+      return res.status(403).json({ msg: 'Access denied. You are not the creator of this course' });
+    }
+
     const updatedCourse = await CourseModel.findByIdAndUpdate(
       req.params.id,
       { subject, courseNumber, description },
@@ -179,6 +193,12 @@ const deleteCourse = async (req, res) => {
     if (!course) {
       return res.status(400).json({ msg: "Course doesn't exist" });
     }
+
+    // CHECK IF THE INSTRUCTOR IS THE OWNER OF THE COURSE
+    if (course.instructor.toString() !== req.user.id) {
+      return res.status(403).json({ msg: 'Access denied. You are not the creator of this course' });
+    }
+
     res.status(200).json({ msg: "Course deleted successfully" });
   } catch (error) {
     if (error.name === "CastError") {

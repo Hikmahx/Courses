@@ -56,7 +56,7 @@ const verifyTokenAndInstructor = (req, res, next) => {
   verifyToken(req, res, () => {
     try {
       if (req.user.role != "instructor") {
-        return res.status(403).json({ message: "Access denied" });
+        return res.status(403).json({ message: "Access denied. User is not an instructor" });
       }
       next();
     } catch (error) {
