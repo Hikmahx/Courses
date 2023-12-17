@@ -9,8 +9,6 @@ dotenv.config({ path: "../config/config.env" });
 // GET REGISTERED USER BY ID (ADMIN)
 router.get("/find/:id", verifyTokenAndAdmin, getUserById);
 
-
-
 // REGISTER USER
 router.post(
   "/",

@@ -10,12 +10,7 @@ const {
   deleteCourse,
 } = require("../controllers/course.controller");
 
-const {
-  verifyToken,
-  verifyTokenAndUser,
-  verifyTokenAndAdmin,
-  verifyTokenAndInstructor,
-} = require("../middlewares/auth.middleware");
+const { verifyTokenAndInstructor } = require("../middlewares/auth.middleware");
 
 const router = express.Router();
 
@@ -44,10 +39,6 @@ router.post(
 router.put("/:id", verifyTokenAndInstructor, updateCourse);
 
 // DELETE COURSE (INSTRUCTOR ONLY, CAN ONLY DELETE THEIR OWN COURSES)
-router.delete(
-  "/:id",
-  verifyTokenAndInstructor,
-  deleteCourse
-);
+router.delete("/:id", verifyTokenAndInstructor, deleteCourse);
 
 module.exports = router;
